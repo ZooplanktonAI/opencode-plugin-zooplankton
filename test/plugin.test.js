@@ -55,6 +55,28 @@ describe("ZooplanktonPlugin", () => {
         `expected file to exist: ${config.instructions[0]}`,
       );
     });
+
+    it("handles null config without throwing", async () => {
+      await assert.doesNotReject(() => plugin.config(null));
+    });
+
+    it("handles non-object config without throwing", async () => {
+      await assert.doesNotReject(() => plugin.config("str"));
+      await assert.doesNotReject(() => plugin.config(42));
+      await assert.doesNotReject(() => plugin.config(undefined));
+    });
+
+    it("replaces non-array config.instructions with an array", async () => {
+      const config = { instructions: "not-an-array" };
+      await plugin.config(config);
+
+      assert.ok(
+        Array.isArray(config.instructions),
+        "instructions should be normalized to an array",
+      );
+      assert.equal(config.instructions.length, 1);
+      assert.equal(config.instructions[0], expectedPath);
+    });
   });
 
   describe("experimental.chat.system.transform hook", () => {
@@ -113,6 +135,15 @@ describe("ZooplanktonPlugin", () => {
 
       // Second call should detect content is already present and skip
       assert.equal(output.system.length, 1);
+    });
+
+    it("handles null output without throwing", async () => {
+      await assert.doesNotReject(() => plugin[hookName]({}, null));
+    });
+
+    it("handles output with missing system array without throwing", async () => {
+      await assert.doesNotReject(() => plugin[hookName]({}, {}));
+      await assert.doesNotReject(() => plugin[hookName]({}, { system: "str" }));
     });
   });
 

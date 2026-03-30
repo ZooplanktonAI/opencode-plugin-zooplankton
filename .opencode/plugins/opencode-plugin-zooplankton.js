@@ -31,12 +31,13 @@ export const ZooplanktonPlugin = async () => ({
   config: async (config) => {
     if (!config || typeof config !== "object") return;
     // Primary session: register file path so OpenCode shows the "Instructions from:" banner
-    config.instructions = config.instructions || [];
+    config.instructions = Array.isArray(config.instructions) ? config.instructions : [];
     config.instructions.push(codingStandardsPath);
   },
 
   "experimental.chat.system.transform": async (_input, output) => {
     // Inject coding standards into every LLM call's system array (including subagents).
+    if (!output || !Array.isArray(output.system)) return;
     // Skip if content is empty (file missing) or already present (avoid duplication
     // with config.instructions which also injects the same content for primary sessions).
     if (

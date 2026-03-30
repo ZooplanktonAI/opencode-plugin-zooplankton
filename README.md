@@ -35,7 +35,7 @@ Edit `instructions/coding-standards.md` and bump the version in `package.json`, 
 
 ## Development
 
-Clone the repo and run the test suite with:
+Requires **Node.js >= 20**. Clone the repo and run the test suite with:
 
 ```sh
 npm test
