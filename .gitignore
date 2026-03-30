@@ -1,0 +1,7 @@
+# opencode-plugin-coding ephemeral files
+.opencode/workflow-local.json
+.opencode/reviewer-knowledge.json
+.opencode/plans/
+.opencode/retrospectives/
+.opencode/designs/
+.worktrees/
