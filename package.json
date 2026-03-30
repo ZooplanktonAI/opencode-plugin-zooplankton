@@ -4,7 +4,13 @@
   "description": "Global OpenCode plugin for ZooplanktonAI coding standards — injected into every session via config.instructions.",
   "type": "module",
   "main": ".opencode/plugins/opencode-plugin-zooplankton.js",
+  "scripts": {
+    "test": "node --test"
+  },
   "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "files": [
     ".opencode/plugins/",
     "instructions/"
