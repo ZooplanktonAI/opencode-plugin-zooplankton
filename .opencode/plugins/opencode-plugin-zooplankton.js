@@ -29,6 +29,7 @@ const codingStandardsContent = fs.existsSync(codingStandardsPath)
 
 export const ZooplanktonPlugin = async () => ({
   config: async (config) => {
+    if (!config || typeof config !== "object") return;
     // Primary session: register file path so OpenCode shows the "Instructions from:" banner
     config.instructions = config.instructions || [];
     config.instructions.push(codingStandardsPath);

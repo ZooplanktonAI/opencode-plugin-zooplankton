@@ -32,3 +32,11 @@ Add to `~/.config/opencode/opencode.json`:
 ## Adding rules
 
 Edit `instructions/coding-standards.md` and bump the version in `package.json`, then republish.
+
+## Development
+
+Clone the repo and run the test suite with:
+
+```sh
+npm test
+```
