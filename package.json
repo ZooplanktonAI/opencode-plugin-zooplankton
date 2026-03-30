@@ -1,0 +1,16 @@
+{
+  "name": "opencode-plugin-zooplankton",
+  "version": "0.1.0",
+  "description": "Global OpenCode plugin for ZooplanktonAI coding standards — injected into every session via config.instructions.",
+  "type": "module",
+  "main": ".opencode/plugins/opencode-plugin-zooplankton.js",
+  "license": "MIT",
+  "files": [
+    ".opencode/plugins/",
+    "instructions/"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:ZooplanktonAI/opencode-plugin-zooplankton.git"
+  }
+}
