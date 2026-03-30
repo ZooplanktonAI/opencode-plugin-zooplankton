@@ -22,3 +22,11 @@ When modifying an existing file:
 - Only fall back to Write when the changes are so pervasive that targeted edits would be harder to follow than a full rewrite (rare — typically >60% of lines changing).
 
 **Why:** Edit preserves unchanged lines exactly, avoids accidental deletions, and produces minimal diffs that are easy to review.
+
+## 3. Prefer `master` Over `main` as Default Branch
+
+When initializing a new git repository or setting the default branch:
+
+- Use `master` as the default branch name, not `main`.
+- When creating a GitHub repo via `gh`, rename immediately with `git branch -M master` before pushing.
+- When referencing the default branch in scripts or docs, use `master` unless the repo explicitly uses `main`.
