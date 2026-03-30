@@ -29,6 +29,7 @@ describe("ZooplanktonPlugin config hook", () => {
 
     assert.equal(config.instructions.length, 2);
     assert.equal(config.instructions[0], "existing.md");
+    assert.equal(config.instructions[1], expectedPath);
   });
 
   it("pushes the correct path to coding-standards.md", async () => {
@@ -50,5 +51,19 @@ describe("ZooplanktonPlugin config hook", () => {
       fs.existsSync(config.instructions[0]),
       `expected file to exist: ${config.instructions[0]}`,
     );
+  });
+
+  // The plugin intentionally does NOT deduplicate — each call appends.
+  // This documents the expected behavior so future maintainers know it's by design.
+  it("pushes the path again on repeated calls (not idempotent)", async () => {
+    const plugin = await ZooplanktonPlugin();
+    const config = {};
+
+    await plugin.config(config);
+    await plugin.config(config);
+
+    assert.equal(config.instructions.length, 2);
+    assert.equal(config.instructions[0], expectedPath);
+    assert.equal(config.instructions[1], expectedPath);
   });
 });
