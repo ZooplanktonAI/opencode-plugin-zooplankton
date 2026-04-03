@@ -50,5 +50,6 @@ Requires **Node.js >= 20**.
 ```sh
 git clone git@github.com:ZooplanktonAI/opencode-plugin-zooplankton.git
 cd opencode-plugin-zooplankton
+npm install
 npm test
 ```

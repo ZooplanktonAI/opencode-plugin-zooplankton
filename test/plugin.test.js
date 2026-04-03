@@ -152,7 +152,7 @@ describe("ZooplanktonPlugin", () => {
     });
 
     it("handles non-string elements in system array without throwing", async () => {
-      const output = { system: [42, null, "existing"] };
+      const output = { system: [42, null, "__UNRELATED_MARKER__"] };
       await assert.doesNotReject(() => plugin[hookName]({}, output));
       // Should still append since no string element contains the coding standards
       assert.equal(output.system.length, 4);

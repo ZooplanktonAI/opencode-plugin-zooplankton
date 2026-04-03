@@ -15,8 +15,8 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pluginRoot = path.resolve(__dirname, "../..");
 
-/** Normalize line endings to LF for robust string comparison (B-2). */
-const norm = (s) => s.replace(/\r\n/g, "\n");
+/** Normalize line endings to LF for robust string comparison. */
+const norm = (s) => s.replace(/\r\n?/g, "\n");
 
 const codingStandardsPath = path.join(
   pluginRoot,
