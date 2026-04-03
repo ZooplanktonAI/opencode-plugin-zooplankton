@@ -15,6 +15,9 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pluginRoot = path.resolve(__dirname, "../..");
 
+/** Normalize line endings to LF for robust string comparison. */
+const norm = (s) => s.replace(/\r\n?/g, "\n");
+
 const codingStandardsPath = path.join(
   pluginRoot,
   "instructions",
@@ -23,29 +26,48 @@ const codingStandardsPath = path.join(
 
 // Read and cache the coding standards content at module load time.
 // Falls back to empty string if the file is missing (graceful degradation).
-const codingStandardsContent = fs.existsSync(codingStandardsPath)
-  ? fs.readFileSync(codingStandardsPath, "utf8").trim()
-  : "";
+let codingStandardsContent = "";
+if (fs.existsSync(codingStandardsPath)) {
+  codingStandardsContent = fs.readFileSync(codingStandardsPath, "utf8").trim();
+} else {
+  console.warn(
+    "[opencode-plugin-zooplankton] coding-standards.md not found at:",
+    codingStandardsPath,
+  );
+}
 
-export const ZooplanktonPlugin = async () => ({
+/**
+ * Internal factory that builds the plugin hooks for given content and path.
+ * Exported (prefixed with _) for testing the file-missing degradation path.
+ */
+export const _createPlugin = (content, filePath) => ({
   config: async (config) => {
     if (!config || typeof config !== "object") return;
     // Primary session: register file path so OpenCode shows the "Instructions from:" banner
     config.instructions = Array.isArray(config.instructions) ? config.instructions : [];
-    config.instructions.push(codingStandardsPath);
+    if (content && !config.instructions.includes(filePath)) {
+      config.instructions.push(filePath);
+    }
   },
 
+  // NOTE: "experimental.chat.system.transform" is an experimental OpenCode hook
+  // (available since OpenCode ≥0.1). Its API surface may change in future versions.
   "experimental.chat.system.transform": async (_input, output) => {
     // Inject coding standards into every LLM call's system array (including subagents).
     if (!output || !Array.isArray(output.system)) return;
     // Skip if content is empty (file missing) or already present (avoid duplication
-    // with config.instructions which also injects the same content for primary sessions).
+    // when the transform hook is invoked multiple times per session).
     if (
-      !codingStandardsContent ||
-      output.system.some((s) => s.includes(codingStandardsContent))
+      !content ||
+      output.system.some(
+        (s) => typeof s === "string" && norm(s).includes(norm(content)),
+      )
     ) {
       return;
     }
-    output.system.push(codingStandardsContent);
+    output.system.push(content);
   },
 });
+
+export const ZooplanktonPlugin = async () =>
+  _createPlugin(codingStandardsContent, codingStandardsPath);

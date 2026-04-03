@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { ZooplanktonPlugin } from "../.opencode/plugins/opencode-plugin-zooplankton.js";
+import { ZooplanktonPlugin, _createPlugin } from "../.opencode/plugins/opencode-plugin-zooplankton.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
@@ -16,6 +16,11 @@ describe("ZooplanktonPlugin", () => {
 
   beforeEach(async () => {
     plugin = await ZooplanktonPlugin();
+  });
+
+  it("exports both config and experimental.chat.system.transform as functions", async () => {
+    assert.equal(typeof plugin.config, "function");
+    assert.equal(typeof plugin["experimental.chat.system.transform"], "function");
   });
 
   describe("config hook", () => {
@@ -145,6 +150,22 @@ describe("ZooplanktonPlugin", () => {
       await assert.doesNotReject(() => plugin[hookName]({}, {}));
       await assert.doesNotReject(() => plugin[hookName]({}, { system: "str" }));
     });
+
+    it("handles non-string elements in system array without throwing", async () => {
+      const output = { system: [42, null, "__UNRELATED_MARKER__"] };
+      await assert.doesNotReject(() => plugin[hookName]({}, output));
+      // Should still append since no string element contains the coding standards
+      assert.equal(output.system.length, 4);
+      assert.equal(output.system[3], codingStandardsContent);
+    });
+
+    it("deduplicates correctly with CRLF line endings in system entries", async () => {
+      const crlfContent = codingStandardsContent.replace(/\n/g, "\r\n");
+      const output = { system: [crlfContent] };
+      await plugin[hookName]({}, output);
+      // Should detect as duplicate despite CRLF vs LF difference
+      assert.equal(output.system.length, 1);
+    });
   });
 
   describe("coding-standards.md content", () => {
@@ -161,5 +182,48 @@ describe("ZooplanktonPlugin", () => {
         codingStandardsContent.includes("Prefer `master` Over `main`"),
       );
     });
+  });
+
+  describe("config hook deduplication", () => {
+    it("does not push duplicate paths on repeated config calls", async () => {
+      const config = {};
+      await plugin.config(config);
+      await plugin.config(config);
+      assert.equal(config.instructions.length, 1);
+    });
+  });
+});
+
+describe("_createPlugin with empty content (file-missing degradation)", () => {
+  const hookName = "experimental.chat.system.transform";
+  let emptyPlugin;
+
+  beforeEach(() => {
+    emptyPlugin = _createPlugin("", "/fake/path/coding-standards.md");
+  });
+
+  it("config hook does not push path when content is empty", async () => {
+    const config = {};
+    await emptyPlugin.config(config);
+    assert.deepEqual(config.instructions, []);
+  });
+
+  it("config hook still normalizes instructions to array when content is empty", async () => {
+    const config = {};
+    await emptyPlugin.config(config);
+    assert.ok(Array.isArray(config.instructions));
+  });
+
+  it("transform hook does not inject when content is empty", async () => {
+    const output = { system: ["existing"] };
+    await emptyPlugin[hookName]({}, output);
+    assert.equal(output.system.length, 1);
+    assert.equal(output.system[0], "existing");
+  });
+
+  it("transform hook does not inject into empty system array when content is empty", async () => {
+    const output = { system: [] };
+    await emptyPlugin[hookName]({}, output);
+    assert.equal(output.system.length, 0);
   });
 });
