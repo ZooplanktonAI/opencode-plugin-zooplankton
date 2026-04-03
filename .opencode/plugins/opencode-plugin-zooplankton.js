@@ -45,7 +45,17 @@ export const _createPlugin = (content, filePath) => ({
     if (!config || typeof config !== "object") return;
     // Primary session: register file path so OpenCode shows the "Instructions from:" banner
     config.instructions = Array.isArray(config.instructions) ? config.instructions : [];
-    if (content && !config.instructions.includes(filePath)) {
+    // Guard: filePath must be a non-empty string. Without this check, OpenCode's
+    // plugin loader (which iterates Object.values(mod)) may call _createPlugin as
+    // a plugin itself with wrong args, causing undefined to be pushed into
+    // config.instructions and crashing OpenCode with "undefined.startsWith".
+    if (
+      content &&
+      typeof content === "string" &&
+      typeof filePath === "string" &&
+      filePath &&
+      !config.instructions.includes(filePath)
+    ) {
       config.instructions.push(filePath);
     }
   },
@@ -55,10 +65,10 @@ export const _createPlugin = (content, filePath) => ({
   "experimental.chat.system.transform": async (_input, output) => {
     // Inject coding standards into every LLM call's system array (including subagents).
     if (!output || !Array.isArray(output.system)) return;
-    // Skip if content is empty (file missing) or already present (avoid duplication
-    // when the transform hook is invoked multiple times per session).
+    // Guard: content must be a non-empty string (same defense as config hook above).
     if (
       !content ||
+      typeof content !== "string" ||
       output.system.some(
         (s) => typeof s === "string" && norm(s).includes(norm(content)),
       )
