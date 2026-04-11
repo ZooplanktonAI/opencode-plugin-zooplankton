@@ -22,12 +22,11 @@
       { "name": "core-reviewer-secondary", "model": "github-copilot/gpt-5.4" }
     ],
     "reviewers": [
+      { "name": "reviewer-codex", "model": "github-copilot/gpt-5.3-codex" },
+      { "name": "reviewer-grok", "model": "github-copilot/grok-code-fast-1" },
+      { "name": "reviewer-minimax", "model": "minimax-cn-coding-plan/MiniMax-M2.7" },
       { "name": "reviewer-glm", "model": "alibaba-coding-plan-cn/glm-5" },
-      { "name": "reviewer-minimax", "model": "minimax/MiniMax-M2.7" },
-      { "name": "reviewer-qwen", "model": "alibaba-coding-plan-cn/qwen3.5-plus" },
-      { "name": "reviewer-kimi", "model": "alibaba-coding-plan-cn/kimi-k2.5" },
-      { "name": "reviewer-ark", "model": "volcengine-plan/ark-code-latest" },
-      { "name": "reviewer-deepseek", "model": "volcengine-plan/deepseek-v3.2" }
+      { "name": "reviewer-qwen", "model": "alibaba-coding-plan-cn/qwen3.6-plus" }
     ],
     "securityReviewers": []
   },
