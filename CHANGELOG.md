@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4] — 2026-04-17
+
+### Fixed
+- Removed `config` hook from `_createPlugin`. OpenCode ≤1.4.7 crashes with `TypeError: undefined is not an object (evaluating 'R.startsWith')` in `systemPaths()` when any element of `config.instructions` is `undefined`. The `experimental.chat.system.transform` hook already injects coding standards into every LLM call with full deduplication, making the `config.instructions` path redundant. Dropping it eliminates the crash entirely.
+
 ## [0.2.3] — 2026-04-17
 
 ### Fixed

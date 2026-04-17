@@ -1,11 +1,10 @@
 /**
  * opencode-plugin-zooplankton — Global coding standards for ZooplanktonAI.
  *
- * Injects instructions/coding-standards.md into every OpenCode session:
- * - config.instructions: ensures primary session loads the file (shows banner)
- * - experimental.chat.system.transform: injects into every LLM call (including
- *   subagents) for maximum salience, since subagent prompts can be very long
- *   and cause trailing instructions to be deprioritized by models.
+ * Injects instructions/coding-standards.md into every OpenCode session via
+ * experimental.chat.system.transform, which fires for every LLM call including
+ * subagents. This gives maximum salience without relying on config.instructions,
+ * which has a known crash in OpenCode ≤1.4.7 when any element is undefined.
  */
 
 import fs from "fs";
@@ -40,32 +39,13 @@ if (fs.existsSync(codingStandardsPath)) {
  * Internal factory that builds the plugin hooks for given content and path.
  * Exported (prefixed with _) for testing the file-missing degradation path.
  */
-export const _createPlugin = (content, filePath) => ({
-  config: async (config) => {
-    if (!config || typeof config !== "object") return;
-    // Primary session: register file path so OpenCode shows the "Instructions from:" banner
-    config.instructions = Array.isArray(config.instructions) ? config.instructions : [];
-    // Guard: filePath must be a non-empty string. Without this check, OpenCode's
-    // plugin loader (which iterates Object.values(mod)) may call _createPlugin as
-    // a plugin itself with wrong args, causing undefined to be pushed into
-    // config.instructions and crashing OpenCode with "undefined.startsWith".
-    if (
-      content &&
-      typeof content === "string" &&
-      typeof filePath === "string" &&
-      filePath &&
-      !config.instructions.includes(filePath)
-    ) {
-      config.instructions.push(filePath);
-    }
-  },
-
+export const _createPlugin = (content) => ({
   // NOTE: "experimental.chat.system.transform" is an experimental OpenCode hook
   // (available since OpenCode ≥0.1). Its API surface may change in future versions.
   "experimental.chat.system.transform": async (_input, output) => {
     // Inject coding standards into every LLM call's system array (including subagents).
     if (!output || !Array.isArray(output.system)) return;
-    // Guard: content must be a non-empty string (same defense as config hook above).
+    // Guard: content must be a non-empty string.
     if (
       !content ||
       typeof content !== "string" ||
@@ -80,9 +60,9 @@ export const _createPlugin = (content, filePath) => ({
 });
 
 export const ZooplanktonPlugin = async () =>
-  _createPlugin(codingStandardsContent, codingStandardsPath);
+  _createPlugin(codingStandardsContent);
 
 export default {
   id: "opencode-plugin-zooplankton",
-  server: async () => _createPlugin(codingStandardsContent, codingStandardsPath),
+  server: async () => _createPlugin(codingStandardsContent),
 };

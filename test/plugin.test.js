@@ -18,70 +18,9 @@ describe("ZooplanktonPlugin", () => {
     plugin = await ZooplanktonPlugin();
   });
 
-  it("exports both config and experimental.chat.system.transform as functions", async () => {
-    assert.equal(typeof plugin.config, "function");
+  it("exports experimental.chat.system.transform as a function (no config hook)", async () => {
     assert.equal(typeof plugin["experimental.chat.system.transform"], "function");
-  });
-
-  describe("config hook", () => {
-    it("initializes config.instructions when absent", async () => {
-      const config = {};
-      await plugin.config(config);
-
-      assert.ok(
-        Array.isArray(config.instructions),
-        "instructions should be an array",
-      );
-      assert.equal(config.instructions.length, 1);
-    });
-
-    it("appends to existing config.instructions without overwriting", async () => {
-      const config = { instructions: ["existing.md"] };
-      await plugin.config(config);
-
-      assert.equal(config.instructions.length, 2);
-      assert.equal(config.instructions[0], "existing.md");
-      assert.equal(config.instructions[1], expectedPath);
-    });
-
-    it("pushes the correct path to coding-standards.md", async () => {
-      const config = {};
-      await plugin.config(config);
-
-      assert.equal(config.instructions[0], expectedPath);
-    });
-
-    it("pushes a path that points to a real file on disk", async () => {
-      const config = {};
-      await plugin.config(config);
-
-      assert.ok(
-        fs.existsSync(config.instructions[0]),
-        `expected file to exist: ${config.instructions[0]}`,
-      );
-    });
-
-    it("handles null config without throwing", async () => {
-      await assert.doesNotReject(() => plugin.config(null));
-    });
-
-    it("handles non-object config without throwing", async () => {
-      await assert.doesNotReject(() => plugin.config("str"));
-      await assert.doesNotReject(() => plugin.config(42));
-      await assert.doesNotReject(() => plugin.config(undefined));
-    });
-
-    it("replaces non-array config.instructions with an array", async () => {
-      const config = { instructions: "not-an-array" };
-      await plugin.config(config);
-
-      assert.ok(
-        Array.isArray(config.instructions),
-        "instructions should be normalized to an array",
-      );
-      assert.equal(config.instructions.length, 1);
-      assert.equal(config.instructions[0], expectedPath);
-    });
+    assert.equal(plugin.config, undefined, "config hook must not exist to avoid OpenCode crash");
   });
 
   describe("experimental.chat.system.transform hook", () => {
@@ -183,15 +122,6 @@ describe("ZooplanktonPlugin", () => {
       );
     });
   });
-
-  describe("config hook deduplication", () => {
-    it("does not push duplicate paths on repeated config calls", async () => {
-      const config = {};
-      await plugin.config(config);
-      await plugin.config(config);
-      assert.equal(config.instructions.length, 1);
-    });
-  });
 });
 
 describe("_createPlugin with empty content (file-missing degradation)", () => {
@@ -199,19 +129,7 @@ describe("_createPlugin with empty content (file-missing degradation)", () => {
   let emptyPlugin;
 
   beforeEach(() => {
-    emptyPlugin = _createPlugin("", "/fake/path/coding-standards.md");
-  });
-
-  it("config hook does not push path when content is empty", async () => {
-    const config = {};
-    await emptyPlugin.config(config);
-    assert.deepEqual(config.instructions, []);
-  });
-
-  it("config hook still normalizes instructions to array when content is empty", async () => {
-    const config = {};
-    await emptyPlugin.config(config);
-    assert.ok(Array.isArray(config.instructions));
+    emptyPlugin = _createPlugin("");
   });
 
   it("transform hook does not inject when content is empty", async () => {
