@@ -1,6 +1,6 @@
 {
   "name": "opencode-plugin-zooplankton",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Global OpenCode plugin for ZooplanktonAI coding standards — injected into every session via config.instructions and experimental.chat.system.transform.",
   "type": "module",
   "main": ".opencode/plugins/opencode-plugin-zooplankton.js",

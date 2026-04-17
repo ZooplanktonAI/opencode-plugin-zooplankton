@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] — 2026-04-17
+
+### Fixed
+- Migrated to OpenCode v1 plugin format (`export default { id, server }`). OpenCode 1.4.7 changed `getLegacyPlugins` to throw a `TypeError` when any named export is not a function. With v1 format, OpenCode uses only `mod.default` and skips the legacy path entirely, preventing any future crash from named utility exports.
+
 ## [0.2.2] — 2026-04-03
 
 ### Fixed

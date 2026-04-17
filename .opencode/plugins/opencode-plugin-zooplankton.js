@@ -81,3 +81,8 @@ export const _createPlugin = (content, filePath) => ({
 
 export const ZooplanktonPlugin = async () =>
   _createPlugin(codingStandardsContent, codingStandardsPath);
+
+export default {
+  id: "opencode-plugin-zooplankton",
+  server: async () => _createPlugin(codingStandardsContent, codingStandardsPath),
+};
